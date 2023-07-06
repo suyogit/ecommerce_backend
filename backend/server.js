@@ -4,6 +4,7 @@ const connectDatabase = require("./config/database")
 
 dotenv.config({ path: "./backend/config/config.env" })
 
+connectDatabase()
 
 
 app.listen(process.env.PORT, () => {
@@ -11,3 +12,4 @@ app.listen(process.env.PORT, () => {
 
 }
 )
+//npm run dev to start the server
