@@ -8,7 +8,7 @@ const productSchema = mongoose.Schema({
         trim: true,
 
     },
-    descitption: {
+    description: {
         type: String,
         required: [true, 'descitption is required']
     },
