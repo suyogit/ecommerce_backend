@@ -5,6 +5,7 @@ const sendToken = require('../utils/jwtToken');
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
 
+
 //Register a user=>/api/v1/register
 
 
@@ -111,6 +112,37 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
     user.password = req.body.password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
+    await user.save()
+    sendToken(user, 200, res)
+}
+)
+
+//get currently logged in user details=>/api/v1/me
+exports.getUserDetails = catchAsyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.user.id)//req.user.id is coming from protect middleware in auth.js
+
+
+    res.status(200).json({
+        success: true,
+        user
+    })
+}
+)
+
+//update password=>/api/v1/password/update
+exports.updatePassword = catchAsyncErrors(async (req, res, next) => {
+    const user = await User.findById(req.user.id).select('+password')//+ password is used to select password from database because we have set select:false in userModel.js 
+    //check previous user password
+    const isPasswordMatched = await user.comparePassword(req.body.oldPassword)
+    if (!isPasswordMatched) {
+        return next(new ErrorHandler('Old password is incorrect', 400))
+    }
+    if (req.body.newPassword !== req.body.confirmPassword) {
+        return next(new ErrorHandler('Password does not match', 400))
+    }
+
+    //setup new password
+    user.password = req.body.newPassword; //user.password is coming from userModel.js
     await user.save()
     sendToken(user, 200, res)
 }
