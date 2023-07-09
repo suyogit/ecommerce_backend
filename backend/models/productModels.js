@@ -39,7 +39,7 @@ const productSchema = new mongoose.Schema({
         required: [true, 'category is required'],
     },
 
-    stock: {
+    Stock: {
         type: Number,
         required: [true, 'stock is required'],
         maxLength: [4, 'stock cannot exceed 5 characters'],

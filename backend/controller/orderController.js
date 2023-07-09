@@ -58,3 +58,70 @@ exports.myOrders = catchAsyncErrors(async (req, res, next) => {
 }
 )
 
+
+// get all orders => /api/v1/admin/orders  //this route is only accessible by the admin
+exports.allOrders = catchAsyncErrors(async (req, res, next) => {
+    const orders = await Order.find()
+    let totalAmount = 0;
+    orders.forEach(order => {
+        totalAmount += order.totalPrice
+    })
+    res.status(200).json({
+        success: true,
+        totalAmount,
+        orders
+    })
+}
+)
+
+// update order status => /api/v1/admin/order/:id  //this route is only accessible by the admin //this route is used to update the order status of the order that is placed by the user 
+exports.updateOrder = catchAsyncErrors(async (req, res, next) => {
+    const order = await Order.findById(req.params.id)
+
+    if (!order) {
+        return next(new ErrorHandler('No Order found with this ID', 404))
+    }
+
+    if (order.orderStatus === 'Delivered') {
+        return next(new ErrorHandler('You have already delivered this order', 400))
+    }
+
+    order.orderItems.forEach(async item => {
+        await updateStock(item.product, item.quantity)
+    })
+    order.orderStatus = req.body.status;
+
+    if (req.body.status === "Delivered") {
+
+        order.deliveredAt = Date.now()
+    }
+
+    await order.save({ validateBeforeSave: false })
+    res.status(200).json({
+        success: true,
+    })
+}
+)
+// this function is used to update the stock of the product after the order is placed  
+async function updateStock(id, quantity) {
+    const product = await Product.findById(id)
+    product.Stock = product.Stock - quantity
+    await product.save({ validateBeforeSave: false })
+}
+
+
+
+// delete order => /api/v1/admin/order/:id  //this route is only accessible by the admin    
+exports.deleteOrder = catchAsyncErrors(async (req, res, next) => {
+    const order = await Order.findById(req.params.id)
+    if (!order) {
+        return next(new ErrorHandler('No Order found with this ID', 404))
+    }
+    await order.deleteOne()
+    res.status(200).json({
+        success: true,
+    })
+}
+)
+
+
