@@ -143,3 +143,48 @@ exports.createProductReview = catchAsyncErrors(async (req, res, next) => {
     })
 })
 
+// get all reviews of a product => /api/v1/reviews   -- Public
+exports.getProductReviews = catchAsyncErrors(async (req, res, next) => {
+    const product = await Product.findById(req.query.id);// query is given in url
+
+    if (!product) {
+        return next(new ErrorHandler("Product not found", 404))
+    }
+
+
+    res.status(200).json({
+        success: true,
+        reviews: product.reviews
+    })
+}
+)
+// delete review of a product => /api/v1/reviews   -- Admin only
+exports.deleteReview = catchAsyncErrors(async (req, res, next) => {
+    const product = await Product.findById(req.query.productId);
+    if (!product) {
+        return next(new ErrorHandler("Product not found", 404))
+    }
+    const reviews = product.reviews.filter(review => review._id.toString() !== req.query.id.toString()); // filter out the review that is to be deleted
+    const numOfReviews = reviews.length;
+    let avg = 0;
+    reviews.forEach(review => {
+        avg += review.rating;
+    }
+    )
+    const ratings = avg / reviews.length;
+    await Product.findByIdAndUpdate(req.query.productId, {
+        reviews,
+        ratings,
+        numOfReviews
+    }, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false
+    })
+    res.status(200).json({
+        success: true
+    })
+}
+)
+
+
