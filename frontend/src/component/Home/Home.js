@@ -1,26 +1,26 @@
-import React, { Fragment } from 'react'
+import React, { Fragment, useEffect } from 'react'
 import { CgMouse } from 'react-icons/cg'
 import "./Home.css"
 import Product from './Product'
-
-const product =
-{
-  _id: 1,
-  name: "Product 1",
-  price: 100,
-  images: [
-    { url: "https://i.ibb.co/VLFdW3X/1.jpg" },
-
-    // Add more image links here
-  ]
+import MetaData from '../layout/MetaData'
+import { getProduct } from '../../actions/productAction'
+import { useDispatch, useSelector } from 'react-redux'
 
 
-}
 
 
 const Home = () => {
+  const dispatch = useDispatch();
+  const { products, loading, error, productsCount } = useSelector(state => state.products)
+
+  useEffect(() => {
+    dispatch(getProduct())
+  }, [dispatch])
+
+
   return (
     <Fragment>
+      <MetaData title={"Eccomerce site"} />
 
       <div className="banner">
         <p>Welcome to Ecommerce </p >
@@ -35,14 +35,12 @@ const Home = () => {
       </div>
       <h2 className="homeHeading"> Featured Products</h2>
       <div className="container" id="container">
-        <Product product={product} />
-        <Product product={product} />
-        <Product product={product} />
-        <Product product={product} />
-        <Product product={product} />
-        <Product product={product} />
-        <Product product={product} />
-        <Product product={product} />
+
+        {
+          products && products.map((product) => (
+            <Product product={product} />
+          ))
+        }
       </div>
     </Fragment>
   )
