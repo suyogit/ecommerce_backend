@@ -18,7 +18,7 @@ const Product = ({ product }) => {
 
 
   return (
-    <Link className='productCard' to={product._id}>
+    <Link className='productCard' to={`/product/${product._id}`}>
       {product.images && product.images.length > 0 && (
         <img
           className='productCard__image'
